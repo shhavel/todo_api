@@ -83,3 +83,80 @@ And remove this lines:
   # instead of true.
   config.use_transactional_fixtures = true
 ```
+
+## Generate Task
+
+```bash
+$ rails g scaffold Task name:string:index slug:string:index state:string:index
+```
+
+Update migration to disallow NULL values, provide default values, and add unique index:
+
+```ruby
+class CreateTasks < ActiveRecord::Migration[5.1]
+  def change
+    create_table :tasks do |t|
+      t.string :name, null: false
+      t.string :slug, null: false
+      t.string :state, default: 'new', null: false
+
+      t.timestamps
+    end
+
+    add_index :tasks, :name
+    add_index :tasks, :slug, unique: true
+    add_index :tasks, :state
+  end
+end
+```
+
+Indexes on name and state will be used for sorting and searching.
+
+Attrribute `slug` will be used as ID in taks URL.
+
+Create and migrate database:
+
+```bash
+$ RAILS_ENV=test rake db:create
+$ RAILS_ENV=test rake db:migrate
+```
+
+## Model Tests
+
+Update factory `spec/factories/tasks.rb`:
+
+```ruby
+FactoryBot.define do
+  factory :task do
+    name "Wash сlothes"
+    slug "laundry"
+    state "in progress"
+  end
+end
+```
+
+Create model validations tests in `spec/models/tasks_spec.rb`:
+
+```ruby
+require 'rails_helper'
+
+RSpec.describe Task, type: :model do
+  context 'validations' do
+    subject { build(:task) }
+
+    it { should validate_presence_of(:name) }
+    it { should validate_presence_of(:slug) }
+    it { should validate_uniqueness_of(:slug) }
+  end
+end
+```
+
+Add model validations in `app/models/task.rb`:
+
+```ruby
+class Task < ApplicationRecord
+  validates_presence_of :name
+  validates_presence_of :slug
+  validates_uniqueness_of :slug
+end
+```
