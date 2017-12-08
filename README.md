@@ -375,3 +375,42 @@ end
 ```
 
 `include_json` matcher comes from gem `rspec-json_expectations`.
+
+## Databae seeds
+
+Add to `db/seeds.rb`:
+
+```ruby
+Task.create!(name: "Wash сlothes", slug: "laundry", state: "in progress")
+Task.create!(name: "Dismantle the trash in the apartment.", slug: "cleaning")
+```
+
+Run
+
+```bash
+$ rake db:setup
+```
+
+This creates, migrates and seeds database. See all available rake taks with `rake -T`
+
+## Curl examples
+
+Start rails server
+
+```bash
+rails s
+```
+
+Open new terminal tab and execute:
+
+```bash
+$ curl -i --request GET http://localhost:3000/tasks --header "Accept: application/json"
+```
+
+This returns all tasks.
+
+Now request one task by it's slug:
+
+```bash
+$ curl -i --request GET http://localhost:3000/tasks/laundry --header "Accept: application/json"
+```
