@@ -319,3 +319,59 @@ RSpec.describe TasksController, type: :controller do
   end
 end
 ```
+
+## Request tests
+
+Request tests cover controllers, models and routing. They can be considered as integration tests for the API.
+
+Add gem `rspec-json_expectations` into Gemfile `:test` group:
+
+```ruby
+group :test do
+  gem 'database_cleaner'
+  gem 'shoulda-matchers', '~> 2.8'
+  gem 'rspec-json_expectations'
+end
+```
+
+Run
+
+```bash
+$ bundle install
+```
+
+Now add some tests into `spec/requests/tasks_spec.rb`:
+
+```ruby
+require 'rails_helper'
+
+RSpec.describe "Tasks", type: :request do
+  let!(:task) { create(:task) }
+
+  describe "GET /tasks" do
+    it "returns list of tasks" do
+      get tasks_path
+      expect(response).to have_http_status(200)
+      expect(response.body).to include_json([{
+        id: task.id,
+        name: task.name,
+        slug: task.slug
+      }])
+    end
+  end
+
+  describe "GET /tasks/:slug" do
+    it "returns list of tasks" do
+      get task_path(task)
+      expect(response).to have_http_status(200)
+      expect(response.body).to include_json({
+        id: task.id,
+        name: task.name,
+        slug: task.slug
+      })
+    end
+  end
+end
+```
+
+`include_json` matcher comes from gem `rspec-json_expectations`.
